@@ -141,7 +141,6 @@ class FavoritesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // ✅ FIXED — now INSIDE the class
   void updateUserInfo(String name, String email, String? imagePath) {
     if (_currentUser != null) {
       _currentUser = {
@@ -153,4 +152,19 @@ class FavoritesProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-}  // ← class closes HERE
+
+  // ✅ FIXED — now INSIDE the class
+  Future<void> resetPassword(String email, String newPassword) async {
+    try {
+      await _db!.update(
+        'users',
+        {'password': newPassword},
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+    } catch (e) {
+      debugPrint('Reset password error: $e');
+    }
+  }
+
+} // ← class closes HERE at the very end
