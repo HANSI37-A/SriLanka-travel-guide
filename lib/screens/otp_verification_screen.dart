@@ -224,7 +224,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         _startResendTimer();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('✅ Verification code resent!'),
+                            content: Text(' Verification code resent!'),
                             backgroundColor: Colors.teal,
                           ),
                         );

@@ -33,7 +33,7 @@ Future<void> _calculateDistance() async {
     // Check if location service is on
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      _showSnack('⚠️ Please turn on Location in your phone Settings');
+      _showSnack(' Please turn on Location in your phone Settings');
       setState(() => _loadingLocation = false);
       return;
     }
@@ -43,14 +43,14 @@ Future<void> _calculateDistance() async {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        _showSnack('⚠️ Location permission denied. Please allow in Settings.');
+        _showSnack(' Location permission denied. Please allow in Settings.');
         setState(() => _loadingLocation = false);
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      _showSnack('⚠️ Location permanently denied. Enable in App Settings.');
+      _showSnack(' Location permanently denied. Enable in App Settings.');
       setState(() => _loadingLocation = false);
       return;
     }
@@ -65,11 +65,11 @@ Future<void> _calculateDistance() async {
         widget.attraction.latitude, widget.attraction.longitude);
 
     setState(() {
-      _distance = '📍 ${(distM / 1000).toStringAsFixed(1)} km from your location';
+      _distance = ' ${(distM / 1000).toStringAsFixed(1)} km from your location';
       _loadingLocation = false;
     });
   } catch (e) {
-    _showSnack('⚠️ Could not get location. Try again.');
+    _showSnack(' Could not get location. Try again.');
     setState(() => _loadingLocation = false);
   }
 }

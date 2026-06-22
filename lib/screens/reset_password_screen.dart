@@ -118,7 +118,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePass,
-                      // ✅ Added onChanged so rules update live
+                      
                       onChanged: (_) => setState(() {}),
                       validator: (v) => v!.length < 8
                           ? 'Password must be at least 8 characters'

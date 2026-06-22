@@ -192,7 +192,7 @@ class AboutScreen extends StatelessWidget {
                   // Footer
                   Center(
                     child: Text(
-                      '© 2026 Local Travel Guide\nMade with ❤️ for Sri Lanka 🇱🇰',
+                      '© 2026 Local Travel Guide\nMade with heart for Sri Lanka 🇱🇰',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.grey[500],

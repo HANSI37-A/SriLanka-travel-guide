@@ -2,17 +2,20 @@ import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/attraction.dart';
+import '../services/settings_services.dart';
 
 class FavoritesProvider with ChangeNotifier {
   Database? _db;
   List<Attraction> _favorites = [];
   Map<String, double> _ratings = {};
   Map<String, dynamic>? _currentUser;
+  String? _profileImagePath;
 
   List<Attraction> get favorites => _favorites;
   Map<String, double> get ratings => _ratings;
   Map<String, dynamic>? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser != null;
+  String? get profileImagePath => _currentUser?['imagePath'] ?? _profileImagePath;
 
   bool isFavorite(String id) => _favorites.any((a) => a.id == id);
   double getRating(String id) => _ratings[id] ?? 0.0;
@@ -55,6 +58,8 @@ class FavoritesProvider with ChangeNotifier {
     );
     await _loadFavorites();
     await _loadRatings();
+    _profileImagePath = await SettingsServices.getProfileImage();
+    notifyListeners();
   }
 
   // ── Favorites ─────────────────────────────────────────
@@ -153,7 +158,19 @@ class FavoritesProvider with ChangeNotifier {
     }
   }
 
-  // ✅ FIXED — now INSIDE the class
+  void updateProfileImage(String? imagePath) {
+    if (imagePath != null) {
+      _profileImagePath = imagePath;
+      if (_currentUser != null) {
+        _currentUser = {
+          ..._currentUser!,
+          'imagePath': imagePath,
+        };
+      }
+      notifyListeners();
+    }
+  }
+
   Future<void> resetPassword(String email, String newPassword) async {
     try {
       await _db!.update(
@@ -167,4 +184,4 @@ class FavoritesProvider with ChangeNotifier {
     }
   }
 
-} // ← class closes HERE at the very end
+} 

@@ -39,7 +39,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
       setState(() => _selectedLanguage = lang);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('✅ Language changed to $lang'),
+          content: Text(' Language changed to $lang'),
           backgroundColor: Colors.teal,
         ),
       );
