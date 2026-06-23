@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/attraction.dart';
+import '../providers/favorites_provider.dart'; 
 import '../widgets/place_card.dart'; 
 
 class CategoryScreen extends StatefulWidget {
@@ -23,7 +25,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Ensure we only display attractions matching the selected category
+  
+    context.watch<FavoritesProvider>();
+
+  
     final displayList = widget.attractionList
         .where((a) => a.category.toLowerCase() == widget.category.toLowerCase())
         .toList();
@@ -39,7 +44,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           ),
         ),
         elevation: 0,
-        backgroundColor: const Color(0xFF5FE4C1), // Seamlessly flows down into the container gradient
+        backgroundColor: const Color(0xFF5FE4C1),
         foregroundColor: const Color(0xFF1A1A1A),
         actions: [
           IconButton(
@@ -55,15 +60,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF5FE4C1), // High deeper accent teal finish tint 
-              Color(0xFFF8F6F0), // Low flat cream body structure tone
+              Color(0xFF5FE4C1), 
+              Color(0xFFF8F6F0), 
             ],
-            stops: [0.0, 0.25], // Fades nicely within top header portion bounds
+            stops: [0.0, 0.25], 
           ),
         ),
         child: Column(
           children: [
-           
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
@@ -94,7 +98,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
- 
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -119,7 +122,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  // Clean uniform grid mapping incorporating PlaceCard details 
   Widget _buildGridView(List<Attraction> displayList) {
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
@@ -138,7 +140,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  // Alternative structured item layout tracking option
   Widget _buildListView(List<Attraction> displayList) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
@@ -146,7 +147,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
       itemBuilder: (_, i) => Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: SizedBox(
-          height: 140, // Uniform fixed baseline row bounds setup
+          height: 140, 
           child: PlaceCard(
             attraction: displayList[i],
             width: double.infinity,

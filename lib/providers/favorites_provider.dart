@@ -1,24 +1,25 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
 import '../models/attraction.dart';
-import '../services/settings_services.dart';
 
 class FavoritesProvider with ChangeNotifier {
   Database? _db;
   List<Attraction> _favorites = [];
   Map<String, double> _ratings = {};
   Map<String, dynamic>? _currentUser;
-  String? _profileImagePath;
 
   List<Attraction> get favorites => _favorites;
   Map<String, double> get ratings => _ratings;
   Map<String, dynamic>? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser != null;
-  String? get profileImagePath => _currentUser?['imagePath'] ?? _profileImagePath;
 
   bool isFavorite(String id) => _favorites.any((a) => a.id == id);
   double getRating(String id) => _ratings[id] ?? 0.0;
+
+  // Get current user's ID
+  int get _userId => _currentUser?['id'] as int? ?? 0;
 
   Future<void> init() async {
     _db = await openDatabase(
@@ -26,12 +27,19 @@ class FavoritesProvider with ChangeNotifier {
       onCreate: (db, version) async {
         await db.execute(
           'CREATE TABLE favorites('
-          'id TEXT PRIMARY KEY, name TEXT, category TEXT, '
+          'id TEXT NOT NULL, '
+          'userId INTEGER NOT NULL, '
+          'name TEXT, category TEXT, '
           'description TEXT, imageUrl TEXT, '
-          'latitude REAL, longitude REAL, address TEXT)',
+          'latitude REAL, longitude REAL, address TEXT, '
+          'PRIMARY KEY (id, userId))',
         );
         await db.execute(
-          'CREATE TABLE ratings(id TEXT PRIMARY KEY, rating REAL)',
+          'CREATE TABLE ratings('
+          'id TEXT NOT NULL, '
+          'userId INTEGER NOT NULL, '
+          'rating REAL, '
+          'PRIMARY KEY (id, userId))',
         );
         await db.execute(
           'CREATE TABLE users('
@@ -48,36 +56,60 @@ class FavoritesProvider with ChangeNotifier {
           );
         }
         if (oldVersion < 3) {
+          await db.execute('DROP TABLE IF EXISTS favorites');
+          await db.execute('DROP TABLE IF EXISTS ratings');
           await db.execute(
-            'CREATE TABLE IF NOT EXISTS ratings('
-            'id TEXT PRIMARY KEY, rating REAL)',
+            'CREATE TABLE favorites('
+            'id TEXT NOT NULL, '
+            'userId INTEGER NOT NULL, '
+            'name TEXT, category TEXT, '
+            'description TEXT, imageUrl TEXT, '
+            'latitude REAL, longitude REAL, address TEXT, '
+            'PRIMARY KEY (id, userId))',
+          );
+          await db.execute(
+            'CREATE TABLE ratings('
+            'id TEXT NOT NULL, '
+            'userId INTEGER NOT NULL, '
+            'rating REAL, '
+            'PRIMARY KEY (id, userId))',
           );
         }
       },
-      version: 2,
+      version: 3, 
     );
-    await _loadFavorites();
-    await _loadRatings();
-    _profileImagePath = await SettingsServices.getProfileImage();
-    notifyListeners();
   }
 
   // ── Favorites ─────────────────────────────────────────
 
   Future<void> _loadFavorites() async {
-    final maps = await _db!.query('favorites');
+    if (_db == null || _userId == 0) return;
+    final maps = await _db!.query(
+      'favorites',
+      where: 'userId = ?',
+      whereArgs: [_userId],
+    );
     _favorites = maps.map((m) => Attraction.fromMap(m)).toList();
     notifyListeners();
   }
 
   Future<void> toggleFavorite(Attraction attraction) async {
+    if (_userId == 0) return;
     if (isFavorite(attraction.id)) {
-      await _db!.delete('favorites',
-          where: 'id = ?', whereArgs: [attraction.id]);
+      await _db!.delete(
+        'favorites',
+        where: 'id = ? AND userId = ?',
+        whereArgs: [attraction.id, _userId],
+      );
       _favorites.removeWhere((a) => a.id == attraction.id);
     } else {
-      await _db!.insert('favorites', attraction.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace);
+      final map = attraction.toMap();
+      map['userId'] = _userId;
+      await _db!.insert(
+        'favorites',
+        map,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
       _favorites.add(attraction);
     }
     notifyListeners();
@@ -86,7 +118,12 @@ class FavoritesProvider with ChangeNotifier {
   // ── Ratings ───────────────────────────────────────────
 
   Future<void> _loadRatings() async {
-    final maps = await _db!.query('ratings');
+    if (_db == null || _userId == 0) return;
+    final maps = await _db!.query(
+      'ratings',
+      where: 'userId = ?',
+      whereArgs: [_userId],
+    );
     _ratings = {
       for (var m in maps) m['id'] as String: m['rating'] as double
     };
@@ -94,16 +131,41 @@ class FavoritesProvider with ChangeNotifier {
   }
 
   Future<void> setRating(String id, double rating) async {
+    if (_userId == 0) return;
     await _db!.insert(
       'ratings',
-      {'id': id, 'rating': rating},
+      {'id': id, 'userId': _userId, 'rating': rating},
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
     _ratings[id] = rating;
     notifyListeners();
   }
 
-  // ── Auth ──────────────────────────────────────────────
+  // ── Auth & Profile State ──────────────────────────────
+
+  // Checks device storage for a saved userId on app start
+  Future<bool> checkPersistedSession() async {
+    if (_db == null) await init(); // Safety fallback if DB isn't running yet
+    
+    final prefs = await SharedPreferences.getInstance();
+    final savedUserId = prefs.getInt('userId');
+    
+    if (savedUserId != null && savedUserId != 0) {
+      final users = await _db!.query(
+        'users',
+        where: 'id = ?',
+        whereArgs: [savedUserId],
+      );
+      
+      if (users.isNotEmpty) {
+        _currentUser = Map<String, dynamic>.from(users.first);
+        await _loadFavorites();
+        await _loadRatings();
+        return true; // Valid session loaded successfully
+      }
+    }
+    return false; // No session found
+  }
 
   Future<String?> register(
       String fullName, String email, String password) async {
@@ -114,11 +176,27 @@ class FavoritesProvider with ChangeNotifier {
         whereArgs: [email],
       );
       if (existing.isNotEmpty) return 'Email already registered';
-      await _db!.insert('users', {
+      
+      final id = await _db!.insert('users', {
         'fullName': fullName,
         'email': email,
         'password': password,
       });
+
+      // Log the user in contextually
+      _currentUser = {
+        'id': id,
+        'fullName': fullName,
+        'email': email,
+      };
+
+      // Persist registration session instantly
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('userId', id);
+
+      _favorites = [];
+      _ratings = {};
+      notifyListeners();
       return null;
     } catch (e) {
       return 'Registration failed. Try again.';
@@ -134,34 +212,41 @@ class FavoritesProvider with ChangeNotifier {
       );
       if (users.isEmpty) return 'Invalid email or password';
       
-      // Grab the database user record
-      final dbUser = users.first;
-
-      // Fetch the persistent local device image path 
-      final localImg = await SettingsServices.getProfileImage();
+      _currentUser = Map<String, dynamic>.from(users.first);
       
-      // Attach the local configuration image path fallback to the map
-      _currentUser = {
-        ...dbUser,
-        'imagePath': dbUser['imagePath'] ?? localImg,
-      };
-
-      notifyListeners();
+      // Persist user ID to device local storage sandbox
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('userId', _userId);
+      
+      await _loadFavorites();
+      await _loadRatings();
       return null;
     } catch (e) {
       return 'Login failed. Try again.';
     }
   }
 
-    void logout() {
-      _currentUser = null;
-      notifyListeners();
-    }
+  void logout() async {
+    _currentUser = null;
+    _favorites = [];
+    _ratings = {};
+    
+    // Clear persistent token on sign-out
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userId');
+    
+    notifyListeners();
+  }
 
-    Future<void> clearUserSession() async {
-      _currentUser = null;
+  void updateProfileImage(String? newPath) {
+    if (_currentUser != null) {
+      _currentUser = {
+        ..._currentUser!,
+        'imagePath': newPath,
+      };
       notifyListeners();
     }
+  }
 
   void updateUserInfo(String name, String email, String? imagePath) {
     if (_currentUser != null) {
@@ -169,24 +254,10 @@ class FavoritesProvider with ChangeNotifier {
         ..._currentUser!,
         'fullName': name,
         'email': email,
-        'imagePath': imagePath,
+        if (imagePath != null) 'imagePath': imagePath,
       };
       notifyListeners();
     }
-  }
-
-  void updateProfileImage(String? imagePath) {
-    if (imagePath == null || imagePath.isEmpty) return;
-
-    _profileImagePath = imagePath;
-
-    if (_currentUser != null) {
-      _currentUser = {
-        ..._currentUser!,
-        'imagePath': imagePath,
-      };
-    }
-    notifyListeners();
   }
 
   Future<void> resetPassword(String email, String newPassword) async {

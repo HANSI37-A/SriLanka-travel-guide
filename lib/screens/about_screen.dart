@@ -38,18 +38,8 @@ class AboutScreen extends StatelessWidget {
                     style: TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                     const SizedBox(height: 14),
-                    const Text(
-                      'Local Travel Guide',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text(
-                      'Version 1.0.0',
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
-                    ),
+                   
+                    
                   ],
                 ),
               ),

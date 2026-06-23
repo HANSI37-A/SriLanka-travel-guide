@@ -29,18 +29,30 @@ class _SplashScreenState extends State<SplashScreen>
         CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
     _controller.forward();
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        final isLoggedIn = context.read<FavoritesProvider>().isLoggedIn;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                isLoggedIn ? const MainScreen() : const WelcomeScreen(),
-          ),
-        );
-      }
-    });
+    // Kick off the auto-login check and navigation flow asynchronously
+    _navigateToNextScreen();
+  }
+
+  /// Checks for an active local login session and routes the user seamlessly
+  Future<void> _navigateToNextScreen() async {
+    // Run the local storage check in the background
+    final provider = context.read<FavoritesProvider>();
+    final bool hasValidActiveSession = await provider.checkPersistedSession();
+
+    // Enforce a minimum 3-second buffer so the splash animations can look pretty
+    await Future.delayed(const Duration(seconds: 3));
+
+    //  Make sure the user hasn't backed out of the app entirely before navigating
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => hasValidActiveSession 
+              ? const MainScreen() 
+              : const WelcomeScreen(),
+        ),
+      );
+    }
   }
 
   @override
