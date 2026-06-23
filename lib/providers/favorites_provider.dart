@@ -133,7 +133,19 @@ class FavoritesProvider with ChangeNotifier {
         whereArgs: [email, password],
       );
       if (users.isEmpty) return 'Invalid email or password';
-      _currentUser = Map<String, dynamic>.from(users.first);
+      
+      // Grab the database user record
+      final dbUser = users.first;
+
+      // Fetch the persistent local device image path 
+      final localImg = await SettingsServices.getProfileImage();
+      
+      // Attach the local configuration image path fallback to the map
+      _currentUser = {
+        ...dbUser,
+        'imagePath': dbUser['imagePath'] ?? localImg,
+      };
+
       notifyListeners();
       return null;
     } catch (e) {
@@ -159,16 +171,17 @@ class FavoritesProvider with ChangeNotifier {
   }
 
   void updateProfileImage(String? imagePath) {
-    if (imagePath != null) {
-      _profileImagePath = imagePath;
-      if (_currentUser != null) {
-        _currentUser = {
-          ..._currentUser!,
-          'imagePath': imagePath,
-        };
-      }
-      notifyListeners();
+    if (imagePath == null || imagePath.isEmpty) return;
+
+    _profileImagePath = imagePath;
+
+    if (_currentUser != null) {
+      _currentUser = {
+        ..._currentUser!,
+        'imagePath': imagePath,
+      };
     }
+    notifyListeners();
   }
 
   Future<void> resetPassword(String email, String newPassword) async {
@@ -183,5 +196,4 @@ class FavoritesProvider with ChangeNotifier {
       debugPrint('Reset password error: $e');
     }
   }
-
-} 
+}

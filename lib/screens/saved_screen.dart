@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/place_card.dart';
 
-
 class SavedScreen extends StatefulWidget {
   const SavedScreen({super.key});
 
@@ -12,124 +11,137 @@ class SavedScreen extends StatefulWidget {
 }
 
 class _SavedScreenState extends State<SavedScreen> {
-  // Added required state properties
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
   @override
   void dispose() {
-    // Crucial to prevent memory leaks in your app lifecycle
     _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Watch the list of favorites from your provider
     final allFavs = context.watch<FavoritesProvider>().favorites;
 
-    // Filter the favorite items list dynamically based on user entry text input matching
+    // Filter dynamically based on search query matching name or category
     final filteredFavs = allFavs.where((attraction) {
       return attraction.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             attraction.category.toLowerCase().contains(_searchQuery.toLowerCase());
+          attraction.category.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F6F0),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Header ────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              child: Row(
-                children: [
-                  const Text(
-                    'Saved Places',
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A)),
-                  ),
-                  const Spacer(),
-                  if (allFavs.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.red.shade100),
-                      ),
-                      child: Text(
-                        '❤️ ${allFavs.length}',
-                        style: TextStyle(
-                            color: Colors.red.shade400,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13),
-                      ),
+  
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color.fromARGB(255, 95, 228, 193), // Upper part: High/Deeper accent tint
+              Color(0xFFF8F6F0), // Lower part: Low flat cream color
+            ],
+            stops: [0.0, 0.35], // Smooth fading finish in the upper third region
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // ── Header ────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                child: Row(
+                  children: [
+                    const Text(
+                      'Saved Places',
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A)),
                     ),
-                ],
-              ),
-            ),
-
-            // ── Search Bar ─────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
+                    const Spacer(),
+                    if (allFavs.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.red.shade100),
+                        ),
+                        child: Text(
+                          '❤️ ${allFavs.length}',
+                          style: TextStyle(
+                              color: Colors.red.shade400,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13),
+                        ),
+                      ),
                   ],
                 ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (val) {
-                    setState(() {
-                      _searchQuery = val;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search attractions...',
-                    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 20),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.grey, size: 18),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
+              ),
+
+              // ── Search Bar ─────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (val) {
+                      setState(() {
+                        _searchQuery = val;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Search attractions...',
+                      hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 20),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.grey, size: 18),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _searchQuery = '';
+                                });
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            // ── Content Layout ────────────────────────────
-            Expanded(
-              child: allFavs.isEmpty
-                  ? _buildEmptyState()
-                  : filteredFavs.isEmpty
-                      ? _buildNoResultsState() // Displays a clean fallback if search text returns zero entries
-                      : _buildSavedGrid(filteredFavs),
-            ),
-          ],
+              // ── Content Layout ────────────────────────────
+              Expanded(
+                child: allFavs.isEmpty
+                    ? _buildEmptyState()
+                    : filteredFavs.isEmpty
+                        ? _buildNoResultsState() 
+                        : _buildSavedGrid(filteredFavs),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -188,8 +200,8 @@ class _SavedScreenState extends State<SavedScreen> {
       ),
     );
   }
-
-  Widget _buildSavedGrid(List filteredFavs) {
+  
+  Widget _buildSavedGrid(List<dynamic> filteredFavs) {
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

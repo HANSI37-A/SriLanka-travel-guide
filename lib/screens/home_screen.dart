@@ -64,210 +64,225 @@ class _HomeScreenState extends State<HomeScreen> {
         final imagePath = provider.currentUser?['imagePath'];
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F6F0),
-          body: SafeArea(
-            child: Column(
-              children: [
-                // ── Top Bar ──────────────────────────
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 14),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: const Color(0xFF00695C),
-                        backgroundImage: imagePath != null
-                            ? FileImage(File(imagePath))
-                            : null,
-                        child: imagePath == null
-                            ? const Icon(Icons.person,
-                                color: Colors.white, size: 22)
-                            : null,
-                      ),
-                      const SizedBox(width: 12),
-                      // Greeting
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome back',
-                              style: TextStyle(
-                                  color: Colors.grey[500], fontSize: 12),
-                            ),
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    '${_getGreeting()} $userName',
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1A1A1A)),
-                                    overflow: TextOverflow.ellipsis,
+          // Made transparent so the background container handles the gradient
+          backgroundColor: Colors.transparent, 
+          body: Container(
+            // Applied Linear Gradient configuration to blend top down
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color.fromARGB(255, 95, 228, 193), // Upper part: High/Deeper accent tint
+                  Color(0xFFF8F6F0), // Down part: Low flat cream color
+                ],
+                stops: [0.0, 0.35], // Smooth fading finish in the upper third region
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // ── Top Bar ──────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 14),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 22,
+                          backgroundColor: const Color(0xFF00695C),
+                          backgroundImage: imagePath != null
+                              ? FileImage(File(imagePath))
+                              : null,
+                          child: imagePath == null
+                              ? const Icon(Icons.person,
+                                  color: Colors.white, size: 22)
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        // Greeting
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Welcome back',
+                                style: TextStyle(
+                                    color: Colors.grey[600], fontSize: 12), // Made slightly darker for readability over tint
+                              ),
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      '${_getGreeting()} $userName',
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1A1A1A)),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Text('👋',
-                                    style: TextStyle(fontSize: 16)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Notification bell
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const AboutScreen()),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black
-                                    .withValues(alpha: 0.06),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                  const SizedBox(width: 4),
+                                  const Text('👋',
+                                      style: TextStyle(fontSize: 16)),
+                                ],
                               ),
                             ],
                           ),
-                          child: const Icon(
-                              Icons.notifications_outlined,
-                              color: Color(0xFF1B4332),
-                              size: 22),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // ── Search Bar ─────────────────────────
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black
-                                    .withValues(alpha: 0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                        // Notification bell
+                        GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const AboutScreen()),
                           ),
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (val) =>
-                                setState(() => _searchQuery = val),
-                            decoration: InputDecoration(
-                              hintText: 'Search places in Sri Lanka...',
-                              hintStyle: TextStyle(
-                                  color: Colors.grey[400], fontSize: 14),
-                              prefixIcon: Icon(Icons.search,
-                                  color: Colors.grey[400], size: 20),
-                              suffixIcon: _searchQuery.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(Icons.clear,
-                                          color: Colors.grey, size: 18),
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        setState(
-                                            () => _searchQuery = '');
-                                      },
-                                    )
-                                  : null,
-                              filled: true,
-                              fillColor: Colors.white,
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 14),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                     
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // ── Category Chips ──────────────────────
-                SizedBox(
-                  height: 42,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: _categories.length,
-                    itemBuilder: (_, i) {
-                      final cat = _categories[i];
-                      final selected = cat == _selectedCategory;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: GestureDetector(
-                          onTap: () => setState(
-                              () => _selectedCategory = cat),
-                          child: AnimatedContainer(
-                            duration:
-                                const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: selected
-                                  ? const Color(0xFF1B4332)
-                                  : Colors.white,
-                              borderRadius:
-                                  BorderRadius.circular(25),
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black
-                                      .withValues(alpha: 0.05),
-                                  blurRadius: 6,
+                                      .withValues(alpha: 0.06),
+                                  blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
-                            child: Text(
-                              cat,
-                              style: TextStyle(
-                                color: selected
-                                    ? Colors.white
-                                    : Colors.grey[600],
-                                fontWeight: selected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                fontSize: 13,
+                            child: const Icon(
+                                Icons.notifications_outlined,
+                                color: Color(0xFF1B4332),
+                                size: 22),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Search Bar ─────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black
+                                      .withValues(alpha: 0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (val) =>
+                                  setState(() => _searchQuery = val),
+                              decoration: InputDecoration(
+                                hintText: 'Search places in Sri Lanka...',
+                                hintStyle: TextStyle(
+                                    color: Colors.grey[400], fontSize: 14),
+                                prefixIcon: Icon(Icons.search,
+                                    color: Colors.grey[400], size: 20),
+                                suffixIcon: _searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear,
+                                            color: Colors.grey, size: 18),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          setState(
+                                              () => _searchQuery = '');
+                                        },
+                                      )
+                                    : null,
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 14),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide.none,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      );
-                    },
+                        
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
+                  const SizedBox(height: 16),
 
-                // ── Scrollable Content ──────────────────
-                Expanded(
-                  child: _searchQuery.isNotEmpty
-                      ? _buildSearchResults()
-                      : _buildMainContent(provider),
-                ),
-              ],
+                  // ── Category Chips ──────────────────────
+                  SizedBox(
+                    height: 42,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: _categories.length,
+                      itemBuilder: (_, i) {
+                        final cat = _categories[i];
+                        final selected = cat == _selectedCategory;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: GestureDetector(
+                            onTap: () => setState(
+                                () => _selectedCategory = cat),
+                            child: AnimatedContainer(
+                              duration:
+                                  const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? const Color(0xFF1B4332)
+                                    : Colors.white,
+                                borderRadius:
+                                    BorderRadius.circular(25),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black
+                                        .withValues(alpha: 0.05),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                cat,
+                                style: TextStyle(
+                                  color: selected
+                                      ? Colors.white
+                                      : Colors.grey[600],
+                                  fontWeight: selected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // ── Scrollable Content ──────────────────
+                  Expanded(
+                    child: _searchQuery.isNotEmpty
+                        ? _buildSearchResults()
+                        : _buildMainContent(provider),
+                  ),
+                ],
+              ),
             ),
           ),
         );

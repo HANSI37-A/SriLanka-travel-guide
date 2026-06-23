@@ -55,19 +55,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  ImageProvider? _getProfileImage(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return NetworkImage(path);
+    }
+    return FileImage(File(path));
+  }
+
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
-    
     await SettingsServices.setUserName(_nameController.text.trim());
     await SettingsServices.setUserEmail(_emailController.text.trim());
+    
     if (_imagePath != null) {
       await SettingsServices.setProfileImage(_imagePath!);
     }
 
     if (mounted) {
       
+      context.read<FavoritesProvider>().updateProfileImage(_imagePath);
+      
+      // Keep other basic user profile metadata synchronized
       context.read<FavoritesProvider>().updateUserInfo(
             _nameController.text.trim(),
             _emailController.text.trim(),
@@ -80,7 +91,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(' Profile updated successfully!'),
+          content: Text('Profile updated successfully!'),
           backgroundColor: Colors.teal,
         ),
       );
@@ -125,9 +136,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: CircleAvatar(
                         radius: 60,
                         backgroundColor: Colors.grey[200],
-                        backgroundImage: _imagePath != null
-                            ? FileImage(File(_imagePath!))
-                            : null,
+                        backgroundImage: _getProfileImage(_imagePath),
                         child: _imagePath == null
                             ? const Icon(Icons.person,
                                 size: 60, color: Colors.grey)
