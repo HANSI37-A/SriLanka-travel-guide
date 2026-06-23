@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/favorites_provider.dart';
+import '../widgets/app_logo.dart';
 import 'main_screen.dart';
 import 'welcome_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -29,8 +31,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        final isLoggedIn =
-            context.read<FavoritesProvider>().isLoggedIn;
+        final isLoggedIn = context.read<FavoritesProvider>().isLoggedIn;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -56,12 +57,11 @@ class _SplashScreenState extends State<SplashScreen>
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF004D40),
-              Color(0xFF00796B),
-              Color(0xFF26A69A),
+              Color(0xFF5FE4C1), // Top accent gradient region
+              Color(0xFF00796B), // Deep foundational primary green base
             ],
           ),
         ),
@@ -70,42 +70,34 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // ── Animated App Logo Component ────────────────
               ScaleTransition(
                 scale: _scaleAnim,
-                child: Container(
-                  width: 120, height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.travel_explore,
-                      size: 70, color: Color(0xFF00796B)),
+                child: const AppLogo(
+                  size: 100,
+                  showText: true,
+                  darkBackground: true,
                 ),
               ),
-              const SizedBox(height: 32),
-              const Text('Local Travel Guide',
-                  style: TextStyle(
-                      color: Colors.white, fontSize: 28,
-                      fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-              const SizedBox(height: 10),
-              const Text('🇱🇰 Explore Beautiful Sri Lanka',
-                  style: TextStyle(color: Colors.white70, fontSize: 16)),
               const SizedBox(height: 60),
+
+              // ── Loading Indicator ─────────────────────────
               const SizedBox(
-                width: 36, height: 36,
+                width: 36,
+                height: 36,
                 child: CircularProgressIndicator(
-                    color: Colors.white, strokeWidth: 3),
+                  color: Colors.white,
+                  strokeWidth: 3,
+                ),
               ),
               const SizedBox(height: 16),
-              const Text('Loading...',
-                  style: TextStyle(color: Colors.white60, fontSize: 13)),
+              const Text(
+                'Loading...',
+                style: TextStyle(
+                  color: Colors.white60,
+                  fontSize: 13,
+                ),
+              ),
             ],
           ),
         ),

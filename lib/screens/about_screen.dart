@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/app_logo.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -29,26 +30,13 @@ class AboutScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 40),
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(22),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.travel_explore,
-                        size: 55,
-                        color: Color(0xFF00796B),
-                      ),
-                    ),
+                                
+                  const AppLogo(size: 80, showText: true, darkBackground: true),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Version 1.0.0',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
                     const SizedBox(height: 14),
                     const Text(
                       'Local Travel Guide',

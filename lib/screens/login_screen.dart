@@ -4,6 +4,7 @@ import '../providers/favorites_provider.dart';
 import 'main_screen.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
+import '../widgets/app_logo.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -75,21 +76,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 Center(
                   child: Column(
                     children: [
-                      Container(
-                        width: 70, height: 70,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF00695C),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: const Icon(Icons.travel_explore,
-                            color: Colors.white, size: 40),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text('Welcome Back!',
-                          style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF004D40))),
+                  const AppLogo(size: 70, showText: false, darkBackground: false),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Welcome Back!',
+                    style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF004D40)),
+                  ),
                       const SizedBox(height: 6),
                       Text('Log in to continue exploring',
                           style: TextStyle(

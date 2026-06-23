@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
+import '../widgets/app_logo.dart';  
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -51,22 +52,7 @@ class WelcomeScreen extends StatelessWidget {
                   const SizedBox(height: 40),
 
                   // Logo
-                  Container(
-                    width: 70, height: 70,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00695C),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: const Icon(Icons.travel_explore,
-                        color: Colors.white, size: 40),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text('LankaGuide',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1)),
+                  const AppLogo(size:70, showText: true, darkBackground: true),
 
                   const Spacer(),
 
