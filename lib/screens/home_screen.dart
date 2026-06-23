@@ -5,7 +5,6 @@ import '../data/attractions_data.dart';
 import '../models/attraction.dart';
 import '../providers/favorites_provider.dart';
 import '../screens/detail_screen.dart';
-import '../widgets/star_rating.dart';
 import 'about_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -33,7 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
               a.description
                   .toLowerCase()
                   .contains(_searchQuery.toLowerCase()) ||
-              a.address.toLowerCase().contains(_searchQuery.toLowerCase()))
+              a.address
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase()))
           .toList();
     }
     return list;
@@ -54,221 +55,226 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<FavoritesProvider>();
-    final userName =
-        provider.currentUser?['fullName']?.split(' ').first ?? 'Traveller';
-    final imagePath = provider.currentUser?['imagePath'];
+    return Consumer<FavoritesProvider>(
+      builder: (context, provider, _) {
+        final userName =
+            provider.currentUser?['fullName']?.split(' ').first ??
+                'Traveller';
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F6F0),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Top Bar ──────────────────────────────
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              child: Row(
-                children: [
-                  // Avatar
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor: const Color(0xFF00695C),
-                    backgroundImage: imagePath != null
-                        ? FileImage(File(imagePath))
-                        : null,
-                    child: imagePath == null
-                        ? const Icon(Icons.person,
-                            color: Colors.white, size: 22)
-                        : null,
-                  ),
-                  const SizedBox(width: 12),
-                  // Greeting
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Welcome back',
-                          style: TextStyle(
-                              color: Colors.grey[500], fontSize: 12),
-                        ),
-                        Row(
+        final imagePath = provider.currentUser?['imagePath'];
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F6F0),
+          body: SafeArea(
+            child: Column(
+              children: [
+                // ── Top Bar ──────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 14),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: const Color(0xFF00695C),
+                        backgroundImage: imagePath != null
+                            ? FileImage(File(imagePath))
+                            : null,
+                        child: imagePath == null
+                            ? const Icon(Icons.person,
+                                color: Colors.white, size: 22)
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      // Greeting
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${_getGreeting()} $userName',
-                              style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1A1A1A)),
+                              'Welcome back',
+                              style: TextStyle(
+                                  color: Colors.grey[500], fontSize: 12),
                             ),
-                            const SizedBox(width: 4),
-                            
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    '${_getGreeting()} $userName',
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1A1A1A)),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Text('👋',
+                                    style: TextStyle(fontSize: 16)),
+                              ],
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                  // Notification bell
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const AboutScreen()),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
                       ),
-                      child: const Icon(Icons.notifications_outlined,
-                          color: Color(0xFF1B4332), size: 22),
-                    ),
+                      // Notification bell
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const AboutScreen()),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black
+                                    .withValues(alpha: 0.06),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                              Icons.notifications_outlined,
+                              color: Color(0xFF1B4332),
+                              size: 22),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
 
-            // ── Search Bar ───────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (val) =>
-                            setState(() => _searchQuery = val),
-                        decoration: InputDecoration(
-                          hintText: 'Search places in Sri Lanka...',
-                          hintStyle: TextStyle(
-                              color: Colors.grey[400], fontSize: 14),
-                          prefixIcon: Icon(Icons.search,
-                              color: Colors.grey[400], size: 20),
-                          suffixIcon: _searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear,
-                                      color: Colors.grey, size: 18),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    setState(() => _searchQuery = '');
-                                  },
-                                )
-                              : null,
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 14),
-                          border: OutlineInputBorder(
+                // ── Search Bar ─────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black
+                                    .withValues(alpha: 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Filter button
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1B4332),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(Icons.tune,
-                        color: Colors.white, size: 20),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // ── Category Chips ────────────────────────
-            SizedBox(
-              height: 42,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: _categories.length,
-                itemBuilder: (_, i) {
-                  final cat = _categories[i];
-                  final selected = cat == _selectedCategory;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: GestureDetector(
-                      onTap: () =>
-                          setState(() => _selectedCategory = cat),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? const Color(0xFF1B4332)
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(25),
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (val) =>
+                                setState(() => _searchQuery = val),
+                            decoration: InputDecoration(
+                              hintText: 'Search places in Sri Lanka...',
+                              hintStyle: TextStyle(
+                                  color: Colors.grey[400], fontSize: 14),
+                              prefixIcon: Icon(Icons.search,
+                                  color: Colors.grey[400], size: 20),
+                              suffixIcon: _searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear,
+                                          color: Colors.grey, size: 18),
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        setState(
+                                            () => _searchQuery = '');
+                                      },
+                                    )
+                                  : null,
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
                             ),
-                          ],
-                        ),
-                        child: Text(
-                          cat,
-                          style: TextStyle(
-                            color: selected
-                                ? Colors.white
-                                : Colors.grey[600],
-                            fontWeight: selected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            fontSize: 13,
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
+                     
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
 
-            // ── Scrollable Content ────────────────────
-            Expanded(
-              child: _searchQuery.isNotEmpty
-                  ? _buildSearchResults()
-                  : _buildMainContent(provider),
+                // ── Category Chips ──────────────────────
+                SizedBox(
+                  height: 42,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: _categories.length,
+                    itemBuilder: (_, i) {
+                      final cat = _categories[i];
+                      final selected = cat == _selectedCategory;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: GestureDetector(
+                          onTap: () => setState(
+                              () => _selectedCategory = cat),
+                          child: AnimatedContainer(
+                            duration:
+                                const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? const Color(0xFF1B4332)
+                                  : Colors.white,
+                              borderRadius:
+                                  BorderRadius.circular(25),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black
+                                      .withValues(alpha: 0.05),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              cat,
+                              style: TextStyle(
+                                color: selected
+                                    ? Colors.white
+                                    : Colors.grey[600],
+                                fontWeight: selected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // ── Scrollable Content ──────────────────
+                Expanded(
+                  child: _searchQuery.isNotEmpty
+                      ? _buildSearchResults()
+                      : _buildMainContent(provider),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  // ── Search Results ──────────────────────────────────
   Widget _buildSearchResults() {
     final results = _filtered;
     if (results.isEmpty) {
@@ -279,8 +285,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Icon(Icons.search_off, size: 70, color: Colors.grey[300]),
             const SizedBox(height: 16),
             Text('No results for "$_searchQuery"',
-                style:
-                    TextStyle(fontSize: 16, color: Colors.grey[500])),
+                style: TextStyle(
+                    fontSize: 16, color: Colors.grey[500])),
           ],
         ),
       );
@@ -292,7 +298,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── Main Content ────────────────────────────────────
   Widget _buildMainContent(FavoritesProvider provider) {
     final featured = _filtered.take(5).toList();
     final popular = _filtered;
@@ -300,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        // Featured Places header
+        // Featured header
         Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -315,24 +320,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'Featured Places',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A)),
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () {},
-                child: const Text(
-                  'See All',
+              const Text('Featured Places',
                   style: TextStyle(
-                      color: Color(0xFF1B4332),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13),
-                ),
-              ),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A1A))),
+              const Spacer(),
             ],
           ),
         ),
@@ -350,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 20),
 
-        // Popular Near You header
+        // Popular header
         Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -365,13 +358,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'Popular Near You',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A)),
-              ),
+              const Text('Popular Near You',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A1A))),
             ],
           ),
         ),
@@ -384,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ── Featured Card (horizontal scroll) ──────────────────
+// ── Featured Card ───────────────────────────────────────
 
 class _FeaturedCard extends StatelessWidget {
   final Attraction attraction;
@@ -401,12 +392,10 @@ class _FeaturedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isFav = context
-        .watch<FavoritesProvider>()
-        .isFavorite(attraction.id);
-    final rating = context
-        .watch<FavoritesProvider>()
-        .getRating(attraction.id);
+    final isFav =
+        context.watch<FavoritesProvider>().isFavorite(attraction.id);
+    final rating =
+        context.watch<FavoritesProvider>().getRating(attraction.id);
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -432,28 +421,25 @@ class _FeaturedCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Image
               Image.network(
                 attraction.imageUrl,
                 fit: BoxFit.cover,
                 headers: const {'Accept': 'image/*'},
-                loadingBuilder: (_, child, progress) =>
-                    progress == null
-                        ? child
-                        : Container(
-                            color: Colors.grey[200],
-                            child: const Center(
-                                child: CircularProgressIndicator(
-                                    color: Color(0xFF1B4332),
-                                    strokeWidth: 2))),
+                loadingBuilder: (_, child, progress) => progress == null
+                    ? child
+                    : Container(
+                        color: Colors.grey[200],
+                        child: const Center(
+                            child: CircularProgressIndicator(
+                                color: Color(0xFF1B4332),
+                                strokeWidth: 2))),
                 errorBuilder: (_, __, ___) => Container(
                   color: Colors.grey[300],
                   child: const Icon(Icons.landscape,
                       size: 60, color: Colors.grey),
                 ),
               ),
-
-              // Gradient overlay
+              // Gradient
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -466,11 +452,9 @@ class _FeaturedCard extends StatelessWidget {
                   ),
                 ),
               ),
-
-              // Heart button top right
+              // Heart
               Positioned(
-                top: 12,
-                right: 12,
+                top: 12, right: 12,
                 child: GestureDetector(
                   onTap: () => context
                       .read<FavoritesProvider>()
@@ -483,18 +467,14 @@ class _FeaturedCard extends StatelessWidget {
                     ),
                     child: Icon(
                       isFav ? Icons.favorite : Icons.favorite_border,
-                      color: Colors.red,
-                      size: 18,
+                      color: Colors.red, size: 18,
                     ),
                   ),
                 ),
               ),
-
-              // Bottom info
+              // Info
               Positioned(
-                bottom: 12,
-                left: 12,
-                right: 12,
+                bottom: 12, left: 12, right: 12,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -523,7 +503,6 @@ class _FeaturedCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        // Rating badge
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 3),
@@ -561,7 +540,7 @@ class _FeaturedCard extends StatelessWidget {
   }
 }
 
-// ── Popular Card (vertical list) ────────────────────────
+// ── Popular Card ────────────────────────────────────────
 
 class _PopularCard extends StatelessWidget {
   final Attraction attraction;
@@ -578,12 +557,10 @@ class _PopularCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isFav = context
-        .watch<FavoritesProvider>()
-        .isFavorite(attraction.id);
-    final rating = context
-        .watch<FavoritesProvider>()
-        .getRating(attraction.id);
+    final isFav =
+        context.watch<FavoritesProvider>().isFavorite(attraction.id);
+    final rating =
+        context.watch<FavoritesProvider>().getRating(attraction.id);
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -592,7 +569,8 @@ class _PopularCard extends StatelessWidget {
             builder: (_) => DetailScreen(attraction: attraction)),
       ),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+        margin:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -607,12 +585,10 @@ class _PopularCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Image
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: SizedBox(
-                width: 80,
-                height: 80,
+                width: 80, height: 80,
                 child: Image.network(
                   attraction.imageUrl,
                   fit: BoxFit.cover,
@@ -635,8 +611,6 @@ class _PopularCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -651,7 +625,6 @@ class _PopularCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  // Category badge
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 8, vertical: 2),
@@ -669,7 +642,6 @@ class _PopularCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  // Star + reviews
                   Row(
                     children: [
                       const Icon(Icons.star,
@@ -677,7 +649,7 @@ class _PopularCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         rating > 0
-                            ? '${rating.toStringAsFixed(1)} reviews'
+                            ? '${rating.toStringAsFixed(1)} (reviews)'
                             : '4.8 (1.2k reviews)',
                         style: TextStyle(
                             color: Colors.grey[600], fontSize: 12),
@@ -687,8 +659,6 @@ class _PopularCard extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Heart button
             GestureDetector(
               onTap: () => context
                   .read<FavoritesProvider>()

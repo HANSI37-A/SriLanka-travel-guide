@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/favorites_provider.dart';
-import '../services/settings_services.dart';
+import '../services/settings_services.dart'; 
 
 class EditProfileScreen extends StatefulWidget {
   final String currentName;
@@ -59,6 +59,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
+    
     await SettingsServices.setUserName(_nameController.text.trim());
     await SettingsServices.setUserEmail(_emailController.text.trim());
     if (_imagePath != null) {
@@ -66,6 +67,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     if (mounted) {
+      
       context.read<FavoritesProvider>().updateUserInfo(
             _nameController.text.trim(),
             _emailController.text.trim(),
@@ -114,7 +116,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             children: [
               const SizedBox(height: 20),
 
-              // Profile image picker
+              // ── Profile image picker ──────────────
               Center(
                 child: Stack(
                   children: [
@@ -157,8 +159,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: const Text('Change Photo',
                     style: TextStyle(color: Color(0xFF00695C))),
               ),
+              const SizedBox(height: 8),
+
+              // ── Preview notice ────────────────────
+              if (_imagePath != null &&
+                  _imagePath != widget.currentImagePath)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.teal.shade100),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle,
+                          color: Colors.teal, size: 16),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'New photo selected — tap Save to apply',
+                        style:
+                            TextStyle(color: Colors.teal, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
               const SizedBox(height: 24),
 
+              // ── Name field ────────────────────────
               _buildField(
                 controller: _nameController,
                 label: 'Full Name',
@@ -168,6 +196,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 16),
 
+              // ── Email field ───────────────────────
               _buildField(
                 controller: _emailController,
                 label: 'Email',
@@ -178,6 +207,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 40),
 
+              // ── Save button ───────────────────────
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -191,12 +221,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   child: _loading
                       ? const SizedBox(
-                          width: 22, height: 22,
+                          width: 22,
+                          height: 22,
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 2))
                       : const Text('Save Changes',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600)),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -234,8 +266,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: Color(0xFF00695C), width: 1.5),
+              borderSide: const BorderSide(
+                  color: Color(0xFF00695C), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

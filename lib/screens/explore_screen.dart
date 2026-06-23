@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/attractions_data.dart';
 import '../models/attraction.dart';
+import '../widgets/place_card.dart';
 import '../widgets/attraction_card.dart';
 import 'category_screen.dart';
 
@@ -26,28 +27,30 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-  bool _isGridView = true;
 
-  final List<String> _categories = const ['Nature', 'Historical', 'Hotels'];
-  final List<IconData> _categoryIcons = const [Icons.park, Icons.history_edu, Icons.hotel];
-  final List<Color> _categoryColors = const [Colors.green, Colors.purple, Colors.orange];
+  final List<String> _categories = const [
+    'Nature', 'Historical', 'Hotels'
+  ];
+  final List<IconData> _categoryIcons = const [
+    Icons.park, Icons.history_edu, Icons.hotel
+  ];
+  final List<Color> _categoryColors = const [
+    Colors.green, Colors.purple, Colors.orange
+  ];
 
   final List<ExploreSection> _sections = const [
     ExploreSection(
-      title: 'Lush Nature',
-      category: 'Nature',
-      categoryTitle: 'Nature Attractions',
-    ),
+        title: 'Lush Nature',
+        category: 'Nature',
+        categoryTitle: 'Nature Attractions'),
     ExploreSection(
-      title: 'Historical Wonders',
-      category: 'Historical',
-      categoryTitle: 'Historical Attractions',
-    ),
+        title: 'Historical Wonders',
+        category: 'Historical',
+        categoryTitle: 'Historical Attractions'),
     ExploreSection(
-      title: 'Coastal Retreats',
-      category: 'Hotels',
-      categoryTitle: 'Hotels',
-    ),
+        title: 'Coastal Retreats',
+        category: 'Hotels',
+        categoryTitle: 'Hotels'),
   ];
 
   List<Attraction> get _filtered {
@@ -55,7 +58,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return sampleAttractions
         .where((a) =>
             a.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            a.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            a.description
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()) ||
             a.address.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
   }
@@ -75,67 +80,85 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Explore Sri Lanka',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: _searchQuery.isNotEmpty
-            ? [
-                IconButton(
-                  icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view),
-                  tooltip: 'Toggle View',
-                  onPressed: () => setState(() => _isGridView = !_isGridView),
+      backgroundColor: const Color(0xFFF8F6F0),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── App Bar ────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 20, vertical: 14),
+              child: Row(
+                children: [
+                  const Text(
+                    'Explore Sri Lanka',
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A)),
+                  ),
+                 
+                ],
+              ),
+            ),
+
+            // ── Search Bar ─────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-              ]
-            : null,
-      ),
-      body: Column(
-        children: [
-          // Search Bar (Reuses design, prefix/suffix icons, borders from HomeScreen)
-          Container(
-            color: Theme.of(context).colorScheme.inversePrimary.withOpacity(0.3),
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (val) => setState(() => _searchQuery = val),
-              decoration: InputDecoration(
-                hintText: 'Search attractions...',
-                prefixIcon: const Icon(Icons.search, color: Colors.teal),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.grey),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide(color: Colors.teal.shade100),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: Colors.teal, width: 1.5),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (val) =>
+                      setState(() => _searchQuery = val),
+                  decoration: InputDecoration(
+                    hintText: 'Search attractions...',
+                    hintStyle: TextStyle(
+                        color: Colors.grey[400], fontSize: 14),
+                    prefixIcon: Icon(Icons.search,
+                        color: Colors.grey[400], size: 20),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear,
+                                color: Colors.grey, size: 18),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            const SizedBox(height: 12),
 
-          // Content Area
-          Expanded(
-            child: _searchQuery.isNotEmpty
-                ? _buildSearchResults()
-                : _buildDefaultContent(),
-          ),
-        ],
+            // ── Content ────────────────────────────
+            Expanded(
+              child: _searchQuery.isNotEmpty
+                  ? _buildSearchResults()
+                  : _buildDefaultContent(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -150,7 +173,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
             Icon(Icons.search_off, size: 70, color: Colors.grey[300]),
             const SizedBox(height: 16),
             Text('No attractions found',
-                style: TextStyle(fontSize: 18, color: Colors.grey[500])),
+                style:
+                    TextStyle(fontSize: 18, color: Colors.grey[500])),
             const SizedBox(height: 8),
             Text('Try a different search term',
                 style: TextStyle(color: Colors.grey[400])),
@@ -162,37 +186,30 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
           child: Row(
             children: [
               Text(
                 '${results.length} results for "$_searchQuery"',
-                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                style:
+                    TextStyle(color: Colors.grey[600], fontSize: 13),
               ),
             ],
           ),
         ),
         Expanded(
-          child: _isGridView
-              ? GridView.builder(
-                  padding: const EdgeInsets.all(12),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.78,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemCount: results.length,
-                  itemBuilder: (_, i) =>
-                      AttractionCard(attraction: results[i], isGrid: true),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: results.length,
-                  itemBuilder: (_, i) =>
-                      AttractionCard(attraction: results[i], isGrid: false),
-                ),
+          child: GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.78,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: results.length,
+            itemBuilder: (_, i) => PlaceCard(attraction: results[i]),
+          ),
         ),
       ],
     );
@@ -200,19 +217,19 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Widget _buildDefaultContent() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
-        // Banner
+        // ── Banner ──────────────────────────────
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF004D40), Color(0xFF26A69A)],
+              colors: [Color(0xFF1B4332), Color(0xFF40916C)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,60 +240,69 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       fontSize: 20,
                       fontWeight: FontWeight.bold)),
               SizedBox(height: 6),
-              Text('Explore 9 handpicked attractions\nacross 3 categories',
-                  style: TextStyle(color: Colors.white70, height: 1.5)),
+              Text(
+                  'Explore 9 handpicked attractions\nacross 3 categories',
+                  style:
+                      TextStyle(color: Colors.white70, height: 1.5)),
             ],
           ),
         ),
         const SizedBox(height: 24),
 
-        // Category Cards Section
-        const Text(
-          'Categories',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
+        // ── Category Cards ───────────────────────
+        const Text('Categories',
+            style: TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Row(
           children: List.generate(_categories.length, (ci) {
             final cat = _categories[ci];
             final icon = _categoryIcons[ci];
             final color = _categoryColors[ci];
-
             return Expanded(
               child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CategoryScreen(
-                        title: _getCategoryTitle(cat),
-                        category: cat,
-                        attractionList: sampleAttractions,
-                      ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CategoryScreen(
+                      title: _getCategoryTitle(cat),
+                      category: cat,
+                      attractionList: sampleAttractions,
                     ),
-                  );
-                },
-                child: Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(icon, color: color, size: 28),
-                        const SizedBox(height: 8),
-                        Text(
-                          cat,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
+                ),
+                child: Container(
+                  margin: EdgeInsets.only(
+                      right: ci < _categories.length - 1 ? 10 : 0),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
                         ),
-                      ],
-                    ),
+                        child: Icon(icon, color: color, size: 24),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(cat,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12)),
+                    ],
                   ),
                 ),
               ),
@@ -285,66 +311,59 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ),
         const SizedBox(height: 24),
 
-        // Category sections with functional View All buttons
+        // ── Category Sections ────────────────────
         ..._sections.map((section) {
-          final catAttractions =
-              sampleAttractions.where((a) => a.category == section.category).toList();
+          final catAttractions = sampleAttractions
+              .where((a) => a.category == section.category)
+              .toList();
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Text(
-                    section.title,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  Text(section.title,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CategoryScreen(
-                            title: section.categoryTitle,
-                            category: section.category,
-                            attractionList: sampleAttractions,
-                          ),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CategoryScreen(
+                          title: section.categoryTitle,
+                          category: section.category,
+                          attractionList: sampleAttractions,
                         ),
-                      );
-                    },
+                      ),
+                    ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'View All',
-                          style: TextStyle(
-                            color: Color(0xFF00695C),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Icon(
-                          Icons.chevron_right,
-                          color: Color(0xFF00695C),
-                          size: 18,
-                        ),
+                        Text('View All',
+                            style: TextStyle(
+                                color: Color(0xFF1B4332),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13)),
+                        Icon(Icons.chevron_right,
+                            color: Color(0xFF1B4332), size: 18),
                       ],
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
+
               SizedBox(
-                height: 220,
+                height: 200,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: catAttractions.length,
-                  itemBuilder: (_, i) => SizedBox(
-                    width: 160,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: AttractionCard(
-                          attraction: catAttractions[i], isGrid: true),
+                  itemBuilder: (_, i) => Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: PlaceCard(
+                      attraction: catAttractions[i],
+                      width: 155,
+                      height: 200,
                     ),
                   ),
                 ),
