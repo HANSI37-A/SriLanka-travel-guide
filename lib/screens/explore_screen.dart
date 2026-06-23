@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../data/attractions_data.dart';
 import '../models/attraction.dart';
 import '../widgets/place_card.dart';
-import '../widgets/attraction_card.dart';
 import 'category_screen.dart';
 
 class ExploreSection {

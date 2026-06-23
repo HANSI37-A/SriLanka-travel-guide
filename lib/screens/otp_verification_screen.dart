@@ -25,8 +25,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   void dispose() {
-    for (var c in _controllers) c.dispose();
-    for (var f in _focusNodes) f.dispose();
+        for (var c in _controllers) {
+      c.dispose();
+    }
+    for (var f in _focusNodes) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -220,11 +224,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               child: _canResend
                   ? GestureDetector(
                       onTap: () {
-                        for (var c in _controllers) c.clear();
-                        _startResendTimer();
+                        for (var c in _controllers) {
+                          c.clear();
+                        }
+                    _startResendTimer();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(' Verification code resent!'),
+                            content: Text('Verification code resent!'),
                             backgroundColor: Colors.teal,
                           ),
                         );

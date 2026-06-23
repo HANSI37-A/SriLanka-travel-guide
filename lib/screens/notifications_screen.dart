@@ -200,7 +200,8 @@ class _ToggleTile extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF00695C),
+          activeThumbColor: const Color(0xFF00695C),
+          activeTrackColor: const Color(0xFF00695C).withValues(alpha: 0.5),
           ),
         ],
       ),

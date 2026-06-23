@@ -273,7 +273,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         await SettingsServices.setNotifications(v);
                         setState(() => _notifications = v);
                       },
-                      activeColor: const Color(0xFF00695C),
+                      activeThumbColor: const Color(0xFF00695C),
+                      activeTrackColor: const Color(0xFF00695C).withValues(alpha: 0.5),
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onTap: () async {
