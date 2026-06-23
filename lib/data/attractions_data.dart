@@ -81,14 +81,4 @@ final List<Attraction> sampleAttractions = [
     longitude: 80.2167,
     address: 'Galle, Southern Province, Sri Lanka',
   ),
-  Attraction(
-    id: '9',
-    name: 'Galle Dutch Fort',
-    category: 'Historical',
-    description: 'A UNESCO World Heritage Site built by the Dutch in the 17th century. This well-preserved colonial fortification houses museums, churches, boutique shops and cafes within its ancient walls.',
-    imageUrl: 'https://images.unsplash.com/photo-1597149651-6b2b21cac188?w=600',
-    latitude: 6.0269,
-    longitude: 80.2167,
-    address: 'Galle Fort, Southern Province, Sri Lanka',
-  ),
 ];

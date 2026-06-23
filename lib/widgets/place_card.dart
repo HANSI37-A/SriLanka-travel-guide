@@ -124,8 +124,7 @@ class PlaceCard extends StatelessWidget {
                   ),
                 ),
               ),
-
-              // ── Heart button top right ─────────────
+           // ── Heart button top right ─────────────
               Positioned(
                 top: 10,
                 right: 10,
@@ -135,13 +134,13 @@ class PlaceCard extends StatelessWidget {
                       .toggleFavorite(attraction),
                   child: Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.25),
+                    decoration: const BoxDecoration(
+                      color: Colors.white, // Solid white background circle
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       isFav ? Icons.favorite : Icons.favorite_border,
-                      color: isFav ? Colors.red : Colors.white,
+                      color: Colors.red, 
                       size: 16,
                     ),
                   ),
