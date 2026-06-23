@@ -30,11 +30,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final img = await SettingsServices.getProfileImage();
     final lang = await SettingsServices.getLanguage();
     final notif = await SettingsServices.getNotifications();
-    setState(() {
-      _profileImagePath = img;
-      _language = lang;
-      _notifications = notif;
-    });
+    if (mounted) {
+      setState(() {
+        _profileImagePath = img;
+        _language = lang;
+        _notifications = notif;
+      });
+    }
+  }
+
+  Widget _buildAvatar(String name, String? imagePath, double radius) {
+    if (imagePath != null && imagePath.isNotEmpty) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.white,
+        backgroundImage: FileImage(File(imagePath)),
+      );
+    }
+    // Show initials
+    final parts = name.trim().split(' ');
+    final initials = parts.length >= 2
+        ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
+        : name.isNotEmpty
+            ? name[0].toUpperCase()
+            : '?';
+
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: Colors.white,
+      child: Text(
+        initials,
+        style: TextStyle(
+          color: const Color(0xFF00695C),
+          fontSize: radius * 0.7,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
   }
 
   @override
@@ -42,19 +74,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final provider = context.watch<FavoritesProvider>();
     final savedCount = provider.favorites.length;
     final ratings = provider.ratings;
-    final userName =
-        provider.currentUser?['fullName'] ?? 'Traveller';
-    final userEmail =
-        provider.currentUser?['email'] ?? '';
-    final imagePath =
-        provider.currentUser?['imagePath'] ?? _profileImagePath;
+
+    final userName = provider.currentUser?['fullName'] ?? 'Traveller';
+    final userEmail = provider.currentUser?['email'] ?? '';
+    final imagePath = provider.currentUser?['imagePath'] ?? _profileImagePath;
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // ── Header ──────────────────────────────────
+          // ── Header ──────────────────────────────
           SliverAppBar(
-            expandedHeight: 220,
+            expandedHeight: 240,
             pinned: true,
             backgroundColor: const Color(0xFF00695C),
             flexibleSpace: FlexibleSpaceBar(
@@ -70,20 +100,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 40),
-                    // Profile image
+                   
                     Stack(
                       children: [
-                        CircleAvatar(
-                          radius: 48,
-                          backgroundColor: Colors.white,
-                          backgroundImage: imagePath != null
-                              ? FileImage(File(imagePath))
-                              : null,
-                          child: imagePath == null
-                              ? const Icon(Icons.person,
-                                  size: 50, color: Color(0xFF00695C))
-                              : null,
-                        ),
+                        _buildAvatar(userName, imagePath, 48),
                         Positioned(
                           bottom: 0,
                           right: 0,
@@ -115,14 +135,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text(userName,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold)),
-                    Text(userEmail.isNotEmpty ? userEmail : '🇱🇰 Sri Lanka',
-                        style: const TextStyle(
-                            color: Colors.white70, fontSize: 13)),
+                   
+                    Text(
+                      userName,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                   
+                    Text(
+                      userEmail.isNotEmpty ? userEmail : '🇱🇰 Sri Lanka',
+                      style: const TextStyle(
+                          color: Colors.white70, fontSize: 13),
+                    ),
+                    const SizedBox(height: 6),
+                   
+                    GestureDetector(
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EditProfileScreen(
+                              currentName: userName,
+                              currentEmail: userEmail,
+                              currentImagePath: imagePath,
+                            ),
+                          ),
+                        );
+                        _loadSettings();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.edit, color: Colors.white, size: 12),
+                            SizedBox(width: 5),
+                            Text('Edit Profile',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -145,6 +209,95 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(width: 12),
                       _StatCard(value: '$savedCount', label: 'Saved'),
                     ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ── User Info Card ──────────────────
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Name row
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.teal.shade50,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.person_outline,
+                                  color: Colors.teal, size: 18),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Full Name',
+                                      style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: 11)),
+                                  Text(
+                                    userName,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Divider(height: 24),
+                        // Email row
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(Icons.email_outlined,
+                                  color: Colors.blue.shade400, size: 18),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Email Address',
+                                      style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: 11)),
+                                  Text(
+                                    userEmail.isNotEmpty
+                                        ? userEmail
+                                        : 'Not provided',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 24),
 
@@ -244,7 +397,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
 
-                  // Edit Profile
                   _SettingsRow(
                     icon: Icons.person_outline,
                     label: 'Edit Profile',
@@ -263,7 +415,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
 
-                  // Notifications
                   _SettingsRow(
                     icon: Icons.notifications_outlined,
                     label: 'Notifications',
@@ -274,7 +425,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         setState(() => _notifications = v);
                       },
                       activeThumbColor: const Color(0xFF00695C),
-                      activeTrackColor: const Color(0xFF00695C).withValues(alpha: 0.5),
+                      activeTrackColor:
+                          const Color(0xFF00695C).withValues(alpha: 0.5),
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onTap: () async {
@@ -287,7 +439,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
 
-                  // Language
                   _SettingsRow(
                     icon: Icons.language,
                     label: 'Language',
@@ -304,7 +455,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
 
-                  // About
                   _SettingsRow(
                     icon: Icons.info_outline,
                     label: 'About App',
@@ -315,7 +465,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
 
-                  // Logout
                   const SizedBox(height: 8),
                   _SettingsRow(
                     icon: Icons.logout,
@@ -344,6 +493,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       );
                       if (confirm == true && context.mounted) {
+                     
+                        await SettingsServices.clearUserData();
                         context.read<FavoritesProvider>().logout();
                         Navigator.pushAndRemoveUntil(
                           context,
@@ -413,7 +564,7 @@ class _CategoryIcon extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Icon(icon, color: color, size: 26),
@@ -505,8 +656,7 @@ class _SettingsRow extends StatelessWidget {
               child: Text(label,
                   style: TextStyle(
                       fontSize: 15,
-                      color:
-                          isDestructive ? Colors.red : Colors.black,
+                      color: isDestructive ? Colors.red : Colors.black,
                       fontWeight: isDestructive
                           ? FontWeight.w600
                           : FontWeight.normal)),

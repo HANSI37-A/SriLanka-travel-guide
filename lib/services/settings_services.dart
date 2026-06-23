@@ -60,4 +60,11 @@ class SettingsServices {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyUserEmail, value);
   }
+
+  static Future<void> clearUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyProfileImage);
+    await prefs.remove(_keyUserName);
+    await prefs.remove(_keyUserEmail);
+  }
 }

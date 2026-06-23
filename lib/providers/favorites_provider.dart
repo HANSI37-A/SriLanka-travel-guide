@@ -153,10 +153,15 @@ class FavoritesProvider with ChangeNotifier {
     }
   }
 
-  void logout() {
-    _currentUser = null;
-    notifyListeners();
-  }
+    void logout() {
+      _currentUser = null;
+      notifyListeners();
+    }
+
+    Future<void> clearUserSession() async {
+      _currentUser = null;
+      notifyListeners();
+    }
 
   void updateUserInfo(String name, String email, String? imagePath) {
     if (_currentUser != null) {
