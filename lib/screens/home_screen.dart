@@ -5,6 +5,7 @@ import '../data/attractions_data.dart';
 import '../models/attraction.dart';
 import '../providers/favorites_provider.dart';
 import '../screens/detail_screen.dart';
+import '../services/settings_services.dart'; 
 import 'about_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,11 +14,80 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with WidgetsBindingObserver { //Add WidgetsBindingObserver
   String _selectedCategory = 'All';
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   final List<String> _categories = ['All', 'Hotels', 'Nature', 'Historical'];
+  String? _cachedImagePath; // Cache image path locally
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this); //Register observer
+    _loadProfileImage();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); //Unregister observer
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  //  Reload image when app comes back to foreground
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadProfileImage();
+    }
+  }
+
+  Future<void> _loadProfileImage() async {
+    final provider = context.read<FavoritesProvider>();
+    // First try provider, then fall back to SharedPreferences
+    final providerPath = provider.currentUser?['imagePath'];
+    if (providerPath != null) {
+      if (mounted) setState(() => _cachedImagePath = providerPath);
+      return;
+    }
+    final savedPath = await SettingsServices.getProfileImage();
+    if (mounted) setState(() => _cachedImagePath = savedPath);
+  }
+
+  //  Build avatar with initials fallback
+  Widget _buildAvatar(String name, String? imagePath) {
+    if (imagePath != null && imagePath.isNotEmpty) {
+      final file = File(imagePath);
+      if (file.existsSync()) {
+        return CircleAvatar(
+          radius: 22,
+          backgroundColor: const Color(0xFF00695C),
+          backgroundImage: FileImage(file),
+        );
+      }
+    }
+    // Show initials
+    final parts = name.trim().split(' ');
+    final initials = parts.length >= 2
+        ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
+        : name.isNotEmpty
+            ? name[0].toUpperCase()
+            : '?';
+    return CircleAvatar(
+      radius: 22,
+      backgroundColor: const Color(0xFF00695C),
+      child: Text(
+        initials,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
 
   List<Attraction> get _filtered {
     List<Attraction> list = _selectedCategory == 'All'
@@ -48,12 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Consumer<FavoritesProvider>(
       builder: (context, provider, _) {
@@ -61,7 +125,9 @@ class _HomeScreenState extends State<HomeScreen> {
             provider.currentUser?['fullName']?.split(' ').first ??
                 'Traveller';
 
-        final imagePath = provider.currentUser?['imagePath'];
+        //  Use provider path first, then cached path
+        final imagePath =
+            provider.currentUser?['imagePath'] ?? _cachedImagePath;
 
         return Scaffold(
           // Made transparent so the background container handles the gradient
@@ -80,14 +146,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             child: SafeArea(
-              child: Column(
-                children: [
-                  // ── Top Bar ──────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 14),
-                    child: Row(
-                      children: [
+            child: Column(
+              children: [
+                // ── Top Bar ──────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 14),
+                  child: Row(
+                    children: [
                         CircleAvatar(
                           radius: 22,
                           backgroundColor: const Color(0xFF00695C),
@@ -99,192 +165,191 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: Colors.white, size: 22)
                               : null,
                         ),
-                        const SizedBox(width: 12),
-                        // Greeting
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Welcome back',
-                                style: TextStyle(
-                                    color: Colors.grey[600], fontSize: 12), // Made slightly darker for readability over tint
-                              ),
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      '${_getGreeting()} $userName',
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF1A1A1A)),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Welcome back',
+                              style: TextStyle(
+                                  color: Colors.grey[500], fontSize: 12),
+                            ),
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    '${_getGreeting()} $userName',
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1A1A1A)),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(width: 4),
-                                  const Text('👋',
-                                      style: TextStyle(fontSize: 16)),
-                                ],
+                                ),
+                                const SizedBox(width: 4),
+                                const Text('👋',
+                                    style: TextStyle(fontSize: 16)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Notification bell
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const AboutScreen()),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    Colors.black.withValues(alpha: 0.06),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
+                          child: const Icon(
+                              Icons.notifications_outlined,
+                              color: Color(0xFF1B4332),
+                              size: 22),
                         ),
-                        // Notification bell
-                        GestureDetector(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const AboutScreen()),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black
-                                      .withValues(alpha: 0.06),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                                Icons.notifications_outlined,
-                                color: Color(0xFF1B4332),
-                                size: 22),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                ),
 
-                  // ── Search Bar ─────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
+                // ── Search Bar ─────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black
+                                    .withValues(alpha: 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (val) =>
+                                setState(() => _searchQuery = val),
+                            decoration: InputDecoration(
+                              hintText: 'Search places in Sri Lanka...',
+                              hintStyle: TextStyle(
+                                  color: Colors.grey[400], fontSize: 14),
+                              prefixIcon: Icon(Icons.search,
+                                  color: Colors.grey[400], size: 20),
+                              suffixIcon: _searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear,
+                                          color: Colors.grey, size: 18),
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        setState(
+                                            () => _searchQuery = '');
+                                      },
+                                    )
+                                  : null,
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // ── Category Chips ──────────────────────
+                SizedBox(
+                  height: 42,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: _categories.length,
+                    itemBuilder: (_, i) {
+                      final cat = _categories[i];
+                      final selected = cat == _selectedCategory;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: GestureDetector(
+                          onTap: () => setState(
+                              () => _selectedCategory = cat),
+                          child: AnimatedContainer(
+                            duration:
+                                const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
+                              color: selected
+                                  ? const Color(0xFF1B4332)
+                                  : Colors.white,
+                              borderRadius:
+                                  BorderRadius.circular(25),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black
                                       .withValues(alpha: 0.05),
-                                  blurRadius: 10,
+                                  blurRadius: 6,
                                   offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
-                            child: TextField(
-                              controller: _searchController,
-                              onChanged: (val) =>
-                                  setState(() => _searchQuery = val),
-                              decoration: InputDecoration(
-                                hintText: 'Search places in Sri Lanka...',
-                                hintStyle: TextStyle(
-                                    color: Colors.grey[400], fontSize: 14),
-                                prefixIcon: Icon(Icons.search,
-                                    color: Colors.grey[400], size: 20),
-                                suffixIcon: _searchQuery.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.clear,
-                                            color: Colors.grey, size: 18),
-                                        onPressed: () {
-                                          _searchController.clear();
-                                          setState(
-                                              () => _searchQuery = '');
-                                        },
-                                      )
-                                    : null,
-                                filled: true,
-                                fillColor: Colors.white,
-                                contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 14),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide.none,
-                                ),
+                            child: Text(
+                              cat,
+                              style: TextStyle(
+                                color: selected
+                                    ? Colors.white
+                                    : Colors.grey[600],
+                                fontWeight: selected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                fontSize: 13,
                               ),
                             ),
                           ),
                         ),
-                        
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 16),
+                ),
+                const SizedBox(height: 8),
 
-                  // ── Category Chips ──────────────────────
-                  SizedBox(
-                    height: 42,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: _categories.length,
-                      itemBuilder: (_, i) {
-                        final cat = _categories[i];
-                        final selected = cat == _selectedCategory;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 10),
-                          child: GestureDetector(
-                            onTap: () => setState(
-                                () => _selectedCategory = cat),
-                            child: AnimatedContainer(
-                              duration:
-                                  const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: selected
-                                    ? const Color(0xFF1B4332)
-                                    : Colors.white,
-                                borderRadius:
-                                    BorderRadius.circular(25),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black
-                                        .withValues(alpha: 0.05),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                cat,
-                                style: TextStyle(
-                                  color: selected
-                                      ? Colors.white
-                                      : Colors.grey[600],
-                                  fontWeight: selected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // ── Scrollable Content ──────────────────
-                  Expanded(
-                    child: _searchQuery.isNotEmpty
-                        ? _buildSearchResults()
-                        : _buildMainContent(provider),
-                  ),
-                ],
-              ),
+                // ── Content ────────────────────────────
+                Expanded(
+                  child: _searchQuery.isNotEmpty
+                      ? _buildSearchResults()
+                      : _buildMainContent(provider),
+                ),
+              ],
             ),
           ),
+        ),
         );
       },
     );
@@ -320,7 +385,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        // Featured header
         Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -341,11 +405,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A1A))),
               const Spacer(),
+              const Text('See All',
+                  style: TextStyle(
+                      color: Color(0xFF1B4332),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13)),
             ],
           ),
         ),
-
-        // Featured horizontal scroll
         SizedBox(
           height: 220,
           child: ListView.builder(
@@ -357,8 +424,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 20),
-
-        // Popular header
         Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -381,8 +446,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-
-        // Popular list
         ...popular.map((a) => _PopularCard(attraction: a)),
         const SizedBox(height: 20),
       ],
@@ -440,21 +503,21 @@ class _FeaturedCard extends StatelessWidget {
                 attraction.imageUrl,
                 fit: BoxFit.cover,
                 headers: const {'Accept': 'image/*'},
-                loadingBuilder: (_, child, progress) => progress == null
-                    ? child
-                    : Container(
-                        color: Colors.grey[200],
-                        child: const Center(
-                            child: CircularProgressIndicator(
-                                color: Color(0xFF1B4332),
-                                strokeWidth: 2))),
-                errorBuilder: (_, _, _) => Container(
+                loadingBuilder: (_, child, progress) =>
+                    progress == null
+                        ? child
+                        : Container(
+                            color: Colors.grey[200],
+                            child: const Center(
+                                child: CircularProgressIndicator(
+                                    color: Color(0xFF1B4332),
+                                    strokeWidth: 2))),
+                errorBuilder: (_, __, ___) => Container(
                   color: Colors.grey[300],
                   child: const Icon(Icons.landscape,
                       size: 60, color: Colors.grey),
                 ),
               ),
-              // Gradient
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -467,7 +530,6 @@ class _FeaturedCard extends StatelessWidget {
                   ),
                 ),
               ),
-              // Heart
               Positioned(
                 top: 12, right: 12,
                 child: GestureDetector(
@@ -487,7 +549,6 @@ class _FeaturedCard extends StatelessWidget {
                   ),
                 ),
               ),
-              // Info
               Positioned(
                 bottom: 12, left: 12, right: 12,
                 child: Column(
@@ -584,8 +645,7 @@ class _PopularCard extends StatelessWidget {
             builder: (_) => DetailScreen(attraction: attraction)),
       ),
       child: Container(
-        margin:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -617,7 +677,7 @@ class _PopularCard extends StatelessWidget {
                                   child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       color: Color(0xFF1B4332)))),
-                  errorBuilder: (_, _, _) => Container(
+                  errorBuilder: (_, __, ___) => Container(
                     color: Colors.grey[200],
                     child: const Icon(Icons.landscape,
                         color: Colors.grey),

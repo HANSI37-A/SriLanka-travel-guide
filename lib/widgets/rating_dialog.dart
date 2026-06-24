@@ -37,7 +37,7 @@ class _RatingDialogState extends State<RatingDialog> {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24), 
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -53,33 +53,30 @@ class _RatingDialogState extends State<RatingDialog> {
               style: TextStyle(color: Colors.grey[600], fontSize: 14),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
 
-            // Star buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(5, (i) {
                 final starValue = i + 1.0;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedRating = starValue),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      _selectedRating >= starValue
-                          ? Icons.star_rounded
-                          : Icons.star_outline_rounded,
-                      color: _selectedRating >= starValue
-                          ? Colors.amber
-                          : Colors.grey[300],
-                      size: 44,
-                    ),
+                final isSelected = _selectedRating >= starValue;
+                
+                return IconButton(
+                  iconSize: 36, 
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact, // Condenses material padding blocks safely
+                  constraints: const BoxConstraints(),
+                  icon: Icon(
+                    isSelected ? Icons.star_rounded : Icons.star_outline_rounded,
+                    color: isSelected ? Colors.amber : Colors.grey[300],
                   ),
+                  onPressed: () => setState(() => _selectedRating = starValue),
                 );
               }),
             ),
             const SizedBox(height: 12),
 
-            // Rating label
+            // Context label string tracking display logic
             Text(
               _selectedRating > 0
                   ? _labels[_selectedRating.toInt()]
@@ -87,14 +84,12 @@ class _RatingDialogState extends State<RatingDialog> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: _selectedRating > 0
-                    ? Colors.amber[700]
-                    : Colors.grey[400],
+                color: _selectedRating > 0 ? Colors.amber[700] : Colors.grey[400],
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
-            // Buttons
+            // Action Control Strip 
             Row(
               children: [
                 Expanded(
@@ -102,8 +97,7 @@ class _RatingDialogState extends State<RatingDialog> {
                     onPressed: () => Navigator.pop(context, null),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text('Cancel'),
                   ),
@@ -118,8 +112,7 @@ class _RatingDialogState extends State<RatingDialog> {
                       backgroundColor: Colors.teal,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text('Submit'),
                   ),
