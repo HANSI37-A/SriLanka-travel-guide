@@ -448,7 +448,7 @@ class _FeaturedCard extends StatelessWidget {
                             child: CircularProgressIndicator(
                                 color: Color(0xFF1B4332),
                                 strokeWidth: 2))),
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_, _, _) => Container(
                   color: Colors.grey[300],
                   child: const Icon(Icons.landscape,
                       size: 60, color: Colors.grey),
@@ -617,7 +617,7 @@ class _PopularCard extends StatelessWidget {
                                   child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       color: Color(0xFF1B4332)))),
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     color: Colors.grey[200],
                     child: const Icon(Icons.landscape,
                         color: Colors.grey),

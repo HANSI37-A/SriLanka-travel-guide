@@ -70,7 +70,7 @@ class PlaceCard extends StatelessWidget {
                                   strokeWidth: 2),
                             ),
                           ),
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_, _, _) => Container(
                   color: Colors.grey[300],
                   child: const Icon(Icons.landscape,
                       size: 50, color: Colors.grey),

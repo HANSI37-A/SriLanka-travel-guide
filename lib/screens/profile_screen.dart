@@ -661,7 +661,7 @@ class _SettingsRow extends StatelessWidget {
                           ? FontWeight.w600
                           : FontWeight.normal)),
             ),
-            if (trailing != null) trailing!,
+            ?trailing,
             if (trailing == null)
               Icon(Icons.chevron_right,
                   color: isDestructive

@@ -56,7 +56,7 @@ Widget build(BuildContext context) {
                       ),
                     );
                   },
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     color: Colors.grey[200],
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -79,7 +79,7 @@ Widget build(BuildContext context) {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          Colors.black.withOpacity(0.65),
+                          Colors.black.withValues(alpha: 0.65),
                           Colors.transparent,
                         ],
                       ),

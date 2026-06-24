@@ -106,7 +106,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF00695C).withOpacity(0.08)
+                            ? const Color(0xFF00695C).withValues(alpha: 0.08)
                             : Colors.grey[50],
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(

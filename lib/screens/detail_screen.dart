@@ -147,7 +147,7 @@ Future<void> _calculateDistance() async {
                         child: CircularProgressIndicator(color: Colors.teal)),
                   );
                 },
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_, _, _) => Container(
                   color: Colors.grey[300],
                   child: const Icon(Icons.landscape, size: 80, color: Colors.grey),
                 ),

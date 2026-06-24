@@ -16,7 +16,7 @@ class WelcomeScreen extends StatelessWidget {
             child: Image.network(
               'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800',
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+              errorBuilder: (_, _, _) => Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFF004D40), Color(0xFF26A69A)],
@@ -35,8 +35,8 @@ class WelcomeScreen extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withOpacity(0.3),
-                  Colors.black.withOpacity(0.75),
+                  Colors.black.withValues(alpha: 0.3),
+                  Colors.black.withValues(alpha: 0.75),
                 ],
               ),
             ),
@@ -166,7 +166,7 @@ class _SocialButton extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8, offset: const Offset(0, 2)),
           ],
         ),

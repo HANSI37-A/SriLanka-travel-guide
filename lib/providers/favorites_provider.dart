@@ -254,7 +254,7 @@ class FavoritesProvider with ChangeNotifier {
         ..._currentUser!,
         'fullName': name,
         'email': email,
-        if (imagePath != null) 'imagePath': imagePath,
+        'imagePath': ?imagePath,
       };
       notifyListeners();
     }
